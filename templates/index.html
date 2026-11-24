@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Tableau de bord {{ year }}</h1>
+<div class="grid">
+  <div class="card kpi"><div class="l">Revenus encaissés</div><div class="v">{{ r.total_income|chf }}</div></div>
+  <div class="card kpi"><div class="l">Frais</div><div class="v">{{ r.total_costs|chf }}</div></div>
+  <div class="card kpi"><div class="l">Résultat</div><div class="v">{{ r.result|chf }}</div></div>
+  <div class="card kpi"><div class="l">Factures en attente</div><div class="v">{{ r.debtors|chf }}</div></div>
+</div>
+<div class="actions">
+  <a class="btn" href="{{ url_for('doc_edit', kind='facture') }}">+ Facture</a>
+  <a class="btn" href="{{ url_for('doc_edit', kind='devis') }}">+ Devis</a>
+  <a class="btn" href="{{ url_for('expense_edit') }}">+ Frais</a>
+</div>
+<div class="card">
+<h3>Factures en attente de paiement</h3>
+{% if open_inv %}
+<table>
+<tr><th>N°</th><th>Client</th><th>Motif</th><th>Échéance</th><th class="n">Montant</th></tr>
+{% for d in open_inv %}
+<tr class="click" onclick="location='{{ url_for('doc_view', did=d.id) }}'">
+  <td>{{ d.number }}</td><td>{{ d.cname }}</td><td>{{ d.title }}</td>
+  <td class="{{ 'late' if d.late }}">{{ d.due_date|dch }}</td><td class="n">{{ d.total|chf }}</td></tr>
+{% endfor %}
+</table>
+{% else %}<p class="muted">Rien en attente 🎉</p>{% endif %}
+</div>
+{% endblock %}

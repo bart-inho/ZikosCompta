@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Réglages</h1>
+<form method="post" class="card">
+  <h3>Mes coordonnées (en-tête et QR-facture)</h3>
+  <label>Nom</label><input name="name" value="{{ s.name }}">
+  <div class="row">
+    <div style="flex:3"><label>Rue</label><input name="street" value="{{ s.street }}"></div>
+    <div><label>N°</label><input name="house_no" value="{{ s.house_no }}"></div>
+    <div><label>NPA</label><input name="zip" value="{{ s.zip }}"></div>
+    <div style="flex:2"><label>Localité</label><input name="city" value="{{ s.city }}"></div>
+  </div>
+  <label>IBAN</label><input name="iban" value="{{ s.iban }}">
+  <h3>Factures</h3>
+  <div class="row">
+    <div><label>Délai de paiement (jours)</label><input name="payment_days" type="number" value="{{ s.payment_days }}"></div>
+    <div><label>Prochain n° de facture</label><input name="next_invoice" type="number" value="{{ s.next_invoice }}"></div>
+    <div><label>Prochain n° de devis</label><input name="next_quote" type="number" value="{{ s.next_quote }}"></div>
+    <div><label>Prochain n° de frais</label><input name="next_expense" type="number" value="{{ s.next_expense }}"></div>
+  </div>
+  <label>Intro facture</label><textarea name="intro_facture">{{ s.intro_facture }}</textarea>
+  <label>Intro devis</label><textarea name="intro_devis">{{ s.intro_devis }}</textarea>
+  <label>Formule de politesse</label><input name="closing" value="{{ s.closing }}">
+  <h3>Solde bancaire d'ouverture</h3>
+  <p class="muted">{% for y in years %}{{ y.year }} : {{ y.opening_bank|chf }} CHF · {% endfor %}</p>
+  <div class="row">
+    <div><label>Année</label><input name="year" type="number" placeholder="2027"></div>
+    <div><label>Solde au 01.01.</label><input name="opening_bank" type="number" step="0.01"></div>
+  </div>
+  <p><button>Enregistrer</button></p>
+</form>
+{% endblock %}

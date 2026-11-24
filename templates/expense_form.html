@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ 'Frais ' ~ e.number if e else 'Nouveau frais' }}</h1>
+<form method="post" enctype="multipart/form-data" class="card">
+  <div class="row">
+    <div><label>Date</label><input type="date" name="exp_date" required value="{{ e.exp_date if e else today }}"></div>
+    <div><label>Montant CHF</label><input type="number" step="0.01" name="amount" required value="{{ e.amount if e }}" autofocus></div>
+    <div style="flex:2"><label>Catégorie</label>
+      <select name="category">{% for k, v in EXPENSE_CATS.items() %}<option value="{{ k }}" {{ 'selected' if e and e.category == k }}>{{ v }}</option>{% endfor %}</select></div>
+  </div>
+  <label>Description</label><input name="description" required value="{{ e.description if e }}" placeholder="ex. CFF Lausanne-Zurich, concert">
+  <label>Reçu (photo ou PDF) {% if e and e.receipt %}— actuel : <a href="{{ url_for('receipt', p=e.receipt) }}" target="_blank">{{ e.receipt }}</a>{% endif %}</label>
+  <input type="file" name="receipt" accept="image/*,application/pdf">
+  <p class="muted">Le fichier est copié dans <code>justificatifs/AAAA/MM/</code>. « Matériel durable » va au bilan (actif) et non dans les charges.</p>
+  <p class="actions">
+    <button>Enregistrer</button>
+    {% if not e %}<button name="again" value="1" class="light">Enregistrer + nouveau</button>{% endif %}
+    {% if e %}<button name="delete" value="1" class="danger" formnovalidate onclick="return confirm('Supprimer ce frais ?')">Supprimer</button>{% endif %}
+  </p>
+</form>
+{% endblock %}

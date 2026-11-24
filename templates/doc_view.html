@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ d.kind|capitalize }} {{ d.number or '(brouillon)' }} <span class="badge {{ d.status }}">{{ d.status }}</span></h1>
+<div class="card">
+  <b>{{ d.title }}</b><br>
+  {% if c %}{{ c.name }} — {{ c.street }} {{ c.house_no }}, {{ c.zip }} {{ c.city }}<br>{% endif %}
+  <span class="muted">Date {{ d.doc_date|dch }}{% if d.due_date and d.kind == 'facture' %} · échéance {{ d.due_date|dch }}{% endif %}
+  {% if d.paid_date %} · payée le {{ d.paid_date|dch }}{% endif %}</span>
+  <table style="margin-top:12px">
+    <tr><th>Description</th><th>Type</th><th class="n">Qté</th><th class="n">Prix</th><th class="n">Total</th></tr>
+    {% for l in lines %}<tr><td>{{ l.description }}</td><td class="muted">{{ LINE_CATS[l.category] }}</td>
+      <td class="n">{{ '%.2f'|format(l.qty) }}</td><td class="n">{{ l.unit_price|chf }}</td><td class="n">{{ (l.qty*l.unit_price)|chf }}</td></tr>{% endfor %}
+    <tr><td colspan="4" class="tot">Total CHF</td><td class="n tot">{{ total|chf }}</td></tr>
+  </table>
+</div>
+
+<div class="actions">
+  <a class="btn light" target="_blank" href="{{ url_for('doc_print', did=d.id) }}">🖨 Aperçu / PDF</a>
+  {% if d.status not in ('payee',) %}<a class="btn light" href="{{ url_for('doc_edit', did=d.id) }}">✏ Modifier</a>{% endif %}
+
+  {% macro act(a, label, cls='') %}<form method="post" action="{{ url_for('doc_action', did=d.id) }}" class="inline">
+    <input type="hidden" name="action" value="{{ a }}"><button class="{{ cls }}">{{ label }}</button></form>{% endmacro %}
+
+  {% if d.status == 'brouillon' %}
+    {{ act('emettre', 'Valider & numéroter (envoyé)') }}
+    {{ act('supprimer', 'Supprimer le brouillon', 'danger') }}
+  {% endif %}
+  {% if d.kind == 'facture' and d.status == 'envoyee' %}
+    <form method="post" action="{{ url_for('doc_action', did=d.id) }}" class="inline actions" style="margin:0">
+      <input type="hidden" name="action" value="payee">
+      <div><label>Payée le</label><input type="date" name="paid_date" value="{{ today }}"></div>
+      <button class="ok">✔ Marquer payée → compta</button></form>
+    {{ act('annuler', 'Annuler la facture', 'danger') }}
+  {% endif %}
+  {% if d.kind == 'facture' and d.status == 'payee' %}{{ act('impayee', 'Annuler le paiement', 'light') }}{% endif %}
+  {% if d.kind == 'devis' and d.status in ('envoye', 'brouillon', 'accepte') %}
+    {{ act('to_facture', '→ Créer la facture', 'ok') }}
+    {% if d.status == 'envoye' %}{{ act('refuse', 'Refusé', 'light') }}{% endif %}
+  {% endif %}
+</div>
+{% if d.kind == 'facture' and d.status == 'brouillon' %}<p class="muted">Le numéro définitif est attribué quand tu valides le brouillon.</p>{% endif %}
+{% endblock %}

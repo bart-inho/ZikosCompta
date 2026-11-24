@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ 'Factures' if kind == 'facture' else 'Devis' }}
+  <form class="yearsel"><select name="year" onchange="this.form.submit()">
+    {% for y in range(today[:4]|int + 1, 2024, -1) %}<option {{ 'selected' if y|string == year }}>{{ y }}</option>{% endfor %}
+  </select></form>
+  <a class="btn small" href="{{ url_for('doc_edit', kind=kind) }}">+ Nouveau</a></h1>
+<table>
+<tr><th>N°</th><th>Date</th><th>Client</th><th>Motif</th><th>Statut</th><th class="n">Montant</th></tr>
+{% for d in docs %}
+<tr class="click" onclick="location='{{ url_for('doc_view', did=d.id) }}'">
+  <td>{{ d.number or '—' }}</td><td>{{ d.doc_date|dch }}</td><td>{{ d.cname }}</td><td>{{ d.title }}</td>
+  <td><span class="badge {{ d.status }}">{{ d.status }}</span></td><td class="n">{{ d.total|chf }}</td></tr>
+{% else %}<tr><td colspan="6" class="muted">Rien pour {{ year }}.</td></tr>
+{% endfor %}
+</table>
+{% endblock %}

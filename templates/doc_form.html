@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ 'Modifier' if d else 'Nouveau' }} {{ kind }} {{ d.number if d and d.number }}</h1>
+<form method="post" class="card">
+  <div class="row">
+    <div style="flex:3"><label>Client</label>
+      <select name="client_id" required>
+        <option value="">— choisir —</option>
+        {% for c in clients %}<option value="{{ c.id }}" {{ 'selected' if d and d.client_id == c.id }}>{{ c.name }}</option>{% endfor %}
+      </select>
+      <a class="muted" href="{{ url_for('client_edit', next=request.path) }}">+ nouveau client</a>
+    </div>
+    <div><label>Date du document</label><input type="date" name="doc_date" value="{{ d.doc_date if d else defaults.doc_date }}"></div>
+    {% if kind == 'facture' %}
+    <div><label>Payable jusqu'au</label><input type="date" name="due_date" value="{{ d.due_date if d else defaults.due_date }}"></div>
+    {% endif %}
+    <div><label>Date(s) de l'événement</label><input name="event_date" placeholder="ex. 06.06.2026" value="{{ d.event_date if d and d.event_date }}"></div>
+  </div>
+  <label>Motif / titre</label><input name="title" required placeholder="ex. Concert @ Festival 2026" value="{{ d.title if d }}">
+  <label>Texte d'introduction</label><textarea name="intro">{{ d.intro if d else defaults.intro }}</textarea>
+
+  <h3>Positions</h3>
+  <table id="lines">
+    <tr><th>Description</th><th style="width:80px">Qté</th><th style="width:110px">Prix unit.</th><th style="width:210px">Type</th><th class="n" style="width:90px">Total</th><th></th></tr>
+    {% for l in (lines or [None]) %}
+    <tr>
+      <td><input name="l_desc" value="{{ l.description if l }}" placeholder="Performance musicale 1h"></td>
+      <td><input name="l_qty" type="number" step="0.01" value="{{ l.qty if l else 1 }}"></td>
+      <td><input name="l_price" type="number" step="0.05" value="{{ l.unit_price if l }}"></td>
+      <td><select name="l_cat">{% for k, v in LINE_CATS.items() %}<option value="{{ k }}" {{ 'selected' if l and l.category == k }}>{{ v }}</option>{% endfor %}</select></td>
+      <td class="n lt"></td>
+      <td><button type="button" class="light small" onclick="delRow(this)">✕</button></td>
+    </tr>
+    {% endfor %}
+    <tr><td colspan="4"><button type="button" class="light small" onclick="addRow()">+ ligne</button>
+      <span class="muted">Astuce : « Défraiement » pour CFF, per diem, carburant refacturés.</span></td>
+      <td class="n tot" id="total"></td><td></td></tr>
+  </table>
+  <p><button>Enregistrer</button></p>
+</form>
+<script>
+const tbl = document.getElementById('lines');
+function rows() { return [...tbl.querySelectorAll('tr')].filter(r => r.querySelector('[name=l_desc]')); }
+function recalc() {
+  let t = 0;
+  rows().forEach(r => {
+    const v = (+r.querySelector('[name=l_qty]').value || 0) * (+r.querySelector('[name=l_price]').value || 0);
+    r.querySelector('.lt').textContent = v.toFixed(2); t += v;
+  });
+  document.getElementById('total').textContent = t.toFixed(2);
+}
+function addRow() {
+  const rs = rows(), n = rs[rs.length - 1].cloneNode(true);
+  n.querySelectorAll('input').forEach(i => i.value = i.name === 'l_qty' ? 1 : '');
+  rs[rs.length - 1].after(n); recalc();
+}
+function delRow(b) { if (rows().length > 1) b.closest('tr').remove(); recalc(); }
+tbl.addEventListener('input', recalc); recalc();
+</script>
+{% endblock %}

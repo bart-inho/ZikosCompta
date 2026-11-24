@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Frais
+  <form class="yearsel"><select name="year" onchange="this.form.submit()">
+    {% for y in range(today[:4]|int + 1, 2024, -1) %}<option {{ 'selected' if y|string == year }}>{{ y }}</option>{% endfor %}
+  </select></form>
+  <a class="btn small" href="{{ url_for('expense_edit') }}">+ Nouveau frais</a></h1>
+<table>
+<tr><th>N°</th><th>Date</th><th>Description</th><th>Catégorie</th><th>Reçu</th><th class="n">Montant</th></tr>
+{% for e in rows %}
+<tr class="click" onclick="location='{{ url_for('expense_edit', eid=e.id) }}'">
+  <td>{{ e.number }}</td><td>{{ e.exp_date|dch }}</td><td>{{ e.description }}</td><td>{{ EXPENSE_CATS.get(e.category, e.category) }}</td>
+  <td>{% if e.receipt %}<a href="{{ url_for('receipt', p=e.receipt) }}" target="_blank" onclick="event.stopPropagation()">📎</a>{% endif %}</td>
+  <td class="n">{{ e.amount|chf }}</td></tr>
+{% else %}<tr><td colspan="6" class="muted">Aucun frais pour {{ year }}.</td></tr>
+{% endfor %}
+<tr><td colspan="5" class="tot">Total</td><td class="n tot">{{ total|chf }}</td></tr>
+</table>
+{% endblock %}

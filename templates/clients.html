@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Clients <a class="btn small" href="{{ url_for('client_edit') }}">+ Nouveau client</a></h1>
+<table>
+<tr><th>Nom</th><th>Adresse</th><th>E-mail</th></tr>
+{% for c in clients %}
+<tr class="click" onclick="location='{{ url_for('client_edit', cid=c.id) }}'">
+  <td>{{ c.name }}{% if c.contact %}<br><span class="muted">{{ c.contact }}</span>{% endif %}</td>
+  <td>{{ c.street }} {{ c.house_no }}, {{ c.zip }} {{ c.city }}</td><td>{{ c.email }}</td></tr>
+{% else %}<tr><td colspan="3" class="muted">Aucun client pour l'instant.</td></tr>
+{% endfor %}
+</table>
+{% endblock %}

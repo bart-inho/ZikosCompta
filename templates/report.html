@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<title>Bilan et compte de résultat {{ r.year }}</title>
+<style>
+@page { size:A4; margin:18mm; }
+body { font-family: Arial, Helvetica, sans-serif; font-size:10.5pt; max-width:180mm; margin:20px auto; color:#000; }
+h1 { font-size:16pt; margin-bottom:2mm; } h2 { font-size:12pt; margin-top:10mm; border-bottom:.4mm solid #000; padding-bottom:1mm; }
+table { width:100%; border-collapse:collapse; } td { padding:1.4mm 0; } td.n { text-align:right; white-space:nowrap; }
+tr.sub td { font-weight:bold; border-top:.3mm solid #000; } tr.big td { font-weight:bold; border-top:.3mm solid #000; border-bottom:.6mm double #000; }
+.muted { color:#555; font-size:9pt; }
+.cols { display:flex; gap:10mm; } .cols > div { flex:1; }
+.noprint { position:fixed; top:10px; right:10px; display:flex; gap:8px; }
+.noprint * { font-size:14px; padding:6px 10px; }
+@media print { .noprint { display:none; } body { margin:0; } }
+</style></head>
+<body>
+<div class="noprint">
+  <form><select name="year" onchange="this.form.submit()">
+    {% for y in range(today[:4]|int + 1, 2024, -1) %}<option {{ 'selected' if y == r.year }}>{{ y }}</option>{% endfor %}</select></form>
+  <button onclick="print()">🖨 Imprimer / PDF</button>
+  <a href="{{ url_for('index') }}">← retour</a>
+</div>
+
+<h1>Comptes annuels {{ r.year }}</h1>
+<div>{{ s.name }}, {{ s.street }} {{ s.house_no }}, {{ s.zip }} {{ s.city }} — activité indépendante (musicien)</div>
+<div class="muted">Période du 01.01.{{ r.year }} au 31.12.{{ r.year }} · comptabilité de caisse · édité le {{ printed|dch }}</div>
+
+<h2>Compte de résultat</h2>
+<table>
+  <tr><td colspan="2"><b>Revenus</b></td></tr>
+  {% for k, v in r.income.items() %}<tr><td>&nbsp;&nbsp;{{ LINE_CATS[k] }}</td><td class="n">{{ v|chf }}</td></tr>{% endfor %}
+  <tr class="sub"><td>Total revenus</td><td class="n">{{ r.total_income|chf }}</td></tr>
+  <tr><td colspan="2"><br><b>Charges</b></td></tr>
+  {% for k, v in r.costs.items() if v %}<tr><td>&nbsp;&nbsp;{{ EXPENSE_CATS[k] }}</td><td class="n">{{ v|chf }}</td></tr>{% endfor %}
+  <tr class="sub"><td>Total charges</td><td class="n">{{ r.total_costs|chf }}</td></tr>
+  <tr class="big"><td>{{ 'Bénéfice' if r.result >= 0 else 'Perte' }} de l'exercice</td><td class="n">{{ r.result|chf }}</td></tr>
+</table>
+
+<h2>Bilan au 31.12.{{ r.year }}</h2>
+<div class="cols">
+  <div><table>
+    <tr><td colspan="2"><b>Actifs</b></td></tr>
+    <tr><td>Banque</td><td class="n">{{ r.bank|chf }}</td></tr>
+    <tr><td>Matériel / équipement</td><td class="n">{{ r.equipment|chf }}</td></tr>
+    <tr class="big"><td>Total actifs</td><td class="n">{{ r.total_assets|chf }}</td></tr>
+  </table></div>
+  <div><table>
+    <tr><td colspan="2"><b>Passifs</b></td></tr>
+    <tr><td>Capital propre au 01.01.</td><td class="n">{{ r.capital|chf }}</td></tr>
+    <tr><td>Résultat de l'exercice</td><td class="n">{{ r.result|chf }}</td></tr>
+    <tr class="big"><td>Total passifs</td><td class="n">{{ r.total_liab|chf }}</td></tr>
+  </table></div>
+</div>
+<p class="muted">Investissements en matériel durable {{ r.year }} : {{ r.invest|chf }} CHF (portés à l'actif, non amortis).<br>
+Factures émises non encaissées au 31.12. (pour info, hors comptes) : {{ r.debtors|chf }} CHF.<br>
+Banque calculée = solde d'ouverture {{ r.opening|chf }} + revenus − charges − investissements.</p>
+</body></html>

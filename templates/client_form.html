@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ 'Modifier' if c else 'Nouveau' }} client</h1>
+<form method="post" class="card">
+  <label>Nom / organisation *</label><input name="name" required value="{{ c.name if c }}">
+  <label>Contact / c/o (optionnel, affiché sous le nom)</label><input name="contact" value="{{ c.contact if c }}">
+  <div class="row">
+    <div style="flex:3"><label>Rue</label><input name="street" value="{{ c.street if c }}"></div>
+    <div><label>N°</label><input name="house_no" value="{{ c.house_no if c }}"></div>
+  </div>
+  <div class="row">
+    <div><label>NPA</label><input name="zip" value="{{ c.zip if c }}"></div>
+    <div style="flex:3"><label>Localité</label><input name="city" value="{{ c.city if c }}"></div>
+    <div><label>Pays</label><input name="country" value="{{ c.country if c else 'CH' }}" maxlength="2"></div>
+  </div>
+  <label>E-mail</label><input name="email" type="email" value="{{ c.email if c }}">
+  <p><button>Enregistrer</button></p>
+</form>
+{% endblock %}
